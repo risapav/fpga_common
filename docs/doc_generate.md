@@ -33,13 +33,12 @@ jobs:
     steps:
       - name: 🛎️ Checkout kódu
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # potrebné pre push a prečítanie celej histórie
 
       - name: 🐍 Nastav Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+#          cache: 'pip' # Pridaný riadok na zrýchlenie
 
       - name: 📦 Inštaluj závislosti a spusti generátor
         run: |
@@ -47,38 +46,17 @@ jobs:
           python scripts/extract_sv_docs.py
           python scripts/generate_index.py
 
-      - name: 🔍 Over obsah vygenerovanej dokumentácie
-        run: |
-          ls -lh docs_md || echo "docs_md priečinok neexistuje"
+      - name: 🔍 Over obsah vygenerovanej dokumentácie (voliteľné)
+        run: ls -lh docs_md
 
-      - name: 📝 Inicializuj samostatnú vetvu gh-pages a commitni dokumentáciu
-        run: |
-          # Vytvor lokálnu vetvu gh-pages alebo ju prepni
-          git fetch origin gh-pages || echo "Vetva gh-pages neexistuje, vytvorí sa nová"
-          git checkout -B gh-pages origin/gh-pages || git checkout --orphan gh-pages
-
-          # Vymaž starý obsah, nech zostane len dokumentácia
-          git rm -rf . > /dev/null 2>&1 || true
-
-          # Skopíruj dokumentáciu z docs_md
-          cp -r docs_md/* .
-
-          # Pridaj všetko do git indexu
-          git add .
-
-          # Commitni len ak sú zmeny
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            git commit -m "📝 Aktualizovaná dokumentácia z .sv súborov"
-            git push origin gh-pages --force
-            echo "✅ Dokumentácia publikovaná do vetvy gh-pages"
-          else
-            echo "⚠️ Žiadne zmeny v dokumentácii"
-          fi
-
-          # Prepni sa späť na main (alebo pôvodnú vetvu)
-          git checkout main
+      - name: 🚀 Publikuj do gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs_md   # Priečinok, ktorý sa má publikovať
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: '📝 Aktualizovaná dokumentácia'
 ```
 
 ---
