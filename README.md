@@ -74,6 +74,7 @@ cd ..
 git add common
 git commit -m "Update common submodule to latest"
 git push
+git config status.showUntrackedFiles no
 ```
 
 ## Ak je problém, ktorý ti Git hlási, podobný tomuto:
