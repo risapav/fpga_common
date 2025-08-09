@@ -39,20 +39,19 @@ jobs:
 
       - name: 📝 Inicializuj samostatnú vetvu gh-pages a commitni dokumentáciu
         run: |
-          # Vytvor lokálnu vetvu gh-pages alebo ju prepni
           git fetch origin gh-pages || echo "Vetva gh-pages neexistuje, vytvorí sa nová"
           git checkout -B gh-pages origin/gh-pages || git checkout --orphan gh-pages
 
-          # Vymaž starý obsah, nech zostane len dokumentácia
           git rm -rf . > /dev/null 2>&1 || true
 
-          # Skopíruj dokumentáciu z docs_md
-          cp -r docs_md/* .
+          if [ -d "docs_md" ] && [ "$(ls -A docs_md)" ]; then
+            cp -r docs_md/* .
+          else
+            echo "⚠️ docs_md priečinok neexistuje alebo je prázdny, žiadne súbory sa nebudú kopírovať"
+          fi
 
-          # Pridaj všetko do git indexu
           git add .
 
-          # Commitni len ak sú zmeny
           if ! git diff --cached --quiet; then
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
@@ -63,6 +62,6 @@ jobs:
             echo "⚠️ Žiadne zmeny v dokumentácii"
           fi
 
-          # Prepni sa späť na main (alebo pôvodnú vetvu)
           git checkout main
+
 
