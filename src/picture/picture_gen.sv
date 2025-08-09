@@ -81,14 +81,14 @@ module picture_gen #(
     input  line_t     v_line_i,
 
     // --- Vstupy súradníc (typicky z modulu PixelCoordinates) ---
-    input  logic [CounterWidthX-1:0] x_i,
-    input  logic [CounterWidthY-1:0] y_i,
+    input  wire logic [CounterWidthX-1:0] x_i,
+    input  wire logic [CounterWidthY-1:0] y_i,
 
     // Data Enable signál indikuje, kedy je pixel v aktívnej (viditeľnej) oblasti.
-    input  logic               de_i,
+    input  wire logic    de_i,
 
     // Vstup na riadenie režimu (napr. pripojený na prepínače na doske)
-    input  logic [ModeWidth-1:0] mode_i,
+    input  wire logic [ModeWidth-1:0] mode_i,
 
     // --- Výstup ---
     // Vypočítané RGB565 dáta pre aktuálny pixel
