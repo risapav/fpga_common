@@ -19,6 +19,7 @@
 | [picture_gen](modules/picture_gen.md) | Generátor testovacích obrazcov pre VGA výstup. | [picture_gen.sv](https://github.com/risapav/fpga_common/blob/main/src/picture/picture_gen.sv) |
 | [rgb565_to_rgb888](modules/rgb565_to_rgb888.md) | Kombinačný modul, ktorý konvertuje 16-bitovú farbu vo formáte RGB565 na 24-bitovú farbu vo formáte RGB888. | [rgb565_to_rgb888.sv](https://github.com/risapav/fpga_common/blob/main/src/vga/rgb565_to_rgb888.sv) |
 | [seven_seg_mux](modules/seven_seg_mux.md) | Modul pre multiplexovanie 7-segmentového displeja. | [seven_seg_mux.sv](https://github.com/risapav/fpga_common/blob/main/src/utils/seven_seg_mux.sv) |
+| [tmds_encoder_pipelined](modules/tmds_encoder_pipelined.md) | TMDS enkodér pre HDMI s 3-stupňovou pipeline a DC-balancom. | [tmds_encoder_pipelined.sv](https://github.com/risapav/fpga_common/blob/main/src/hdmi/tmds_encoder_pipelined.sv) |
 | [vga_ctrl](modules/vga_ctrl.md) | VGA kontrolér pre výstup RGB signálu a synchronizačných impulzov | [vga_ctrl.sv](https://github.com/risapav/fpga_common/blob/main/src/vga/vga_ctrl.sv) |
 | [vga_line](modules/vga_line.md) | Generátor jednej časovej periódy VGA signálu | [vga_line.sv](https://github.com/risapav/fpga_common/blob/main/src/vga/vga_line.sv) |
 | [vga_pixel_xy](modules/vga_pixel_xy.md) | Generátor VGA súradníc pixelov (X, Y) | [vga_pixel_xy.sv](https://github.com/risapav/fpga_common/blob/main/src/vga/vga_pixel_xy.sv) |
