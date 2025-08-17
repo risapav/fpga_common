@@ -71,12 +71,12 @@ module infoframe_builder #(
 );
 
   // --- Konštanty pre lepšiu čitateľnosť ---
-  localparam int AviVERSION   = 8'd2;
-  localparam int AviLENGTH    = 8'd13;
-  localparam int SpdVERSION   = 8'd1;
-  localparam int SpdLENGTH    = 8'd25;
-  localparam int AudioVERSION = 8'd1;
-  localparam int AudioLENGTH  = 8'd10;
+  localparam logic [7:0] AviVERSION   = 8'd2;
+  localparam logic [7:0] AviLENGTH    = 8'd13;
+  localparam logic [7:0] SpdVERSION   = 8'd1;
+  localparam logic [7:0] SpdLENGTH    = 8'd25;
+  localparam logic [7:0] AudioVERSION = 8'd1;
+  localparam logic [7:0] AudioLENGTH  = 8'd10;
 
   // --- Kombinačná logika pre stavbu paketu ---
   always_comb begin
