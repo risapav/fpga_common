@@ -110,7 +110,7 @@ module packet_streamer #(
       if (next_state != state)
         byte_idx <= '0;
       else if (packet_valid_o)
-        byte_idx <= byte_idx + 1;
+        byte_idx <= byte_idx + 5'd1;
     end
   end
 
