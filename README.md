@@ -1,40 +1,58 @@
-# fpga_common
-Zdieľaná knižnica modulov pre FPGA projekty
+Tu je rozšírená verzia README.md pre `fpga_common` s pridanou sekciou **FAQ a tipy pre submoduly**, ktorá rieši najčastejšie problémy a dáva odporúčania pre CI/CD:
 
-## ✅ Odporúčané riešenie: Git submoduly
+---
+
+# fpga\_common
+
+**Zdieľaná knižnica modulov pre FPGA projekty**
+
+`fpga_common` obsahuje opakovane použiteľné moduly, dokumentáciu a nástroje pre prácu s FPGA projektmi.
+
+---
+
+## ✅ Odporúčané použitie: Git submoduly
+
+Použitie submodulu umožňuje, aby projekty používali **konkrétnu verziu knižnice**, pričom dokumentácia a moduly sú spravované samostatne.
+
+---
 
 ### 💡 Kedy použiť:
 
-Ak chceš mať knižnicu a dokumentáciu ako samostatný repozitár a chceš, aby projekty vždy používali konkrétnu verziu tejto knižnice.
+* Chceš mať knižnicu a dokumentáciu ako **samostatný repozitár**.
+* Chceš, aby projekty vždy používali **konkrétnu verziu** knižnice.
+* Chceš jednoducho aktualizovať knižnicu vo viacerých projektoch.
+
+---
+
 ### 🔧 Krok 1: Vytvor samostatný repozitár
 
 Vytvor nový repozitár, napr.:
 
-```bash
+```text
 risapav/fpga_common
 ```
 
-a presuň tam priečinky scs/ a docs_md/:
+Struktúra:
 
 ```
 fpga_common/
-├── scs/
-└── docs_md/
+├── scs/        # HDL moduly
+└── docs_md/    # Automaticky generovaná dokumentácia
 ```
 
-### 🔧 Krok 2: Pridaj ho ako submodul do oboch projektov
+---
 
-V koreňovom adresári projektu (napr. fpga_ep4ce55f23):
+### 🔧 Krok 2: Pridaj ho ako submodul do projektu
+
+V koreňovom adresári projektu:
 
 ```bash
 git submodule add https://github.com/risapav/fpga_common common
-
-# alebo
-
+# alebo SSH
 git submodule add git@github.com:risapav/fpga_common.git common
 ```
 
-Tým sa knižnica a dokumentácia objavia ako:
+Výsledná štruktúra projektu:
 
 ```
 fpga_ep4ce55f23/
@@ -45,7 +63,9 @@ fpga_ep4ce55f23/
 ├── ...
 ```
 
-    Prístup k súborom: common/scs/..., common/docs_md/...
+Prístup k súborom: `common/scs/...`, `common/docs_md/...`.
+
+---
 
 ### 🔧 Krok 3: Commitni a pushni submodul
 
@@ -55,32 +75,48 @@ git commit -m "Pridaný submodul fpga_common"
 git push
 ```
 
-### 🔧 Krok 4: Práca s submodulom
+---
 
-Keď niekto klonuje projekt, musí spustiť:
+### 🔧 Krok 4: Práca so submodulom
+
+#### Klonovanie projektu so submodulom:
 
 ```bash
 git clone --recurse-submodules https://github.com/risapav/fpga_ep4ce55f23
-
-# alebo po clone
-
+# alebo po klasickom clone:
 git submodule sync
 git submodule update --init --recursive
 ```
 
-Pri úprave fpga_common, v konkrétnom projekte spustíš:
+#### Aktualizácia submodulu:
+
+1. Prejdite do adresára submodulu:
 
 ```bash
 cd common
 git pull origin main  # alebo iný branch
 cd ..
+```
+
+2. Commitnite zmenu v submodule:
+
+```bash
 git add common
 git commit -m "Update common submodule to latest"
 git push
+```
+
+> Tip: Pre pohodlnejšiu kontrolu použite:
+
+```bash
 git config status.showUntrackedFiles no
 ```
 
-## Ak je problém, ktorý ti Git hlási, podobný tomuto:
+---
+
+### 🔧 Krok 5: Riešenie konfliktov a lokálnych zmien
+
+Ak Git hlási chybu, napr.:
 
 ```
 error: Your local changes to the following files would be overwritten by merge:
@@ -89,45 +125,27 @@ Please commit your changes or stash them before you merge.
 Aborting
 ```
 
-### Čo to znamená?
+#### Možnosti:
 
-* Pokúšaš sa stiahnuť najnovšie zmeny z vetvy `main` z repozitára `origin`, ale máš **lokálne neuložené zmeny** v súbore `src/picture/picture_gen.sv`.
-* Ak by Git pokračoval v merge alebo pull, prepísal by tento súbor zo vzdialeného repozitára, čo nechce spraviť bez tvojho vedomia.
-* Git sa teda zastaví, aby si mal možnosť si svoje zmeny uložiť (commit) alebo ich odložiť bokom (stash).
+1️⃣ **Zachovať lokálne zmeny:**
 
----
+```bash
+git add src/picture/picture_gen.sv
+git commit -m "Moje zmeny"
+git pull -f origin main
+```
 
-### Riešenie
+Alebo:
 
-Vyber si jednu z možností:
+```bash
+git stash
+git pull -f origin main
+git stash pop
+```
 
----
+> Poznámka: Konflikty po `stash pop` rieš manuálne.
 
-#### ✅ Ak chceš svoje zmeny **zachovať**:
-
-1. Ulož ich pomocou commit-u:
-
-   ```bash
-   git add src/picture/picture_gen.sv
-   git commit -m "Moje zmeny v picture_gen.sv"
-   git pull -f origin main
-   ```
-
-2. **Alebo** ak to ešte nechceš commitnúť, môžeš ich "odložiť" (stashnúť):
-
-   ```bash
-   git stash
-   git pull -f origin main
-   git stash pop
-   ```
-
-   > Poznámka: Ak `stash pop` skončí s konfliktom, budeš ho musieť vyriešiť manuálne.
-
----
-
-#### ❌ Ak tvoje zmeny **nepotrebuješ**, môžeš ich zahodiť:
-
-> Upozornenie: Prídeš o neuložené zmeny.
+2️⃣ **Nechceš lokálne zmeny – zahodíš ich:**
 
 ```bash
 git checkout -- src/picture/picture_gen.sv
@@ -136,11 +154,122 @@ git pull -f origin main
 
 ---
 
-Chceš, aby sme spolu pozreli, čo presne si zmenil v tom súbore? Môžeš použiť:
+## 📝 Automatizovaná dokumentácia
+
+* **extract\_sv\_docs.py** – Parsuje SystemVerilog súbory a generuje Markdown dokumentáciu (`docs_md/modules/`).
+* **generate\_index.py** – Vytvára `index.md` so zoznamom modulov a odkazmi na zdrojové súbory.
+
+### Použitie:
 
 ```bash
-git diff src/picture/picture_gen.sv
+python scripts/extract_sv_docs.py
+python scripts/generate_index.py
 ```
 
-Alebo ak potrebuješ, vysvetlím aj stash, conflict resolve, alebo prácu so submodulmi detailnejšie.
+* Skripty podporujú **viacero zdrojových adresárov** vrátane submodulov.
+* Súbory s rovnakým názvom z rôznych adresárov sa nezmiešajú – používajú unikátne cesty (`subdir_module.sv.md`).
 
+---
+
+## 📂 Štruktúra projektu
+
+```
+fpga_common/
+├── scs/            # HDL moduly (SystemVerilog)
+├── docs_md/        # Vygenerované Markdown súbory
+├── scripts/
+│   ├── extract_sv_docs.py
+│   └── generate_index.py
+└── README.md       # Tento súbor
+```
+
+---
+
+## 🔗 CI/CD Workflow
+
+* Automatické generovanie dokumentácie pri pushi:
+
+```yaml
+# .github/workflows/gen-docs.yml
+python scripts/extract_sv_docs.py
+python scripts/generate_index.py
+```
+
+* Publikovaná dokumentácia sa nachádza vo `docs_md/` a môže byť deployovaná do GitHub Pages.
+
+---
+
+## ❓ FAQ a tipy pre submoduly
+
+### 1️⃣ Viacero súborov s rovnakým názvom
+
+* Skripty `extract_sv_docs.py` a `generate_index.py` používajú **unikátne cesty**, aby sa predišlo prepísaniu dokumentácie pre súbory s rovnakým názvom v rôznych adresároch.
+* Odporúča sa **nepoužívať duplicitné názvy modulov**, alebo použiť prefix/namespace.
+
+---
+
+### 2️⃣ Problémy pri clone submodulu
+
+* Ak sa submodul nedá naklonovať:
+
+```text
+fatal: Fetched in submodule path 'common', but it did not contain <commit_hash>
+```
+
+* Riešenie:
+
+  1. Skontroluj, či commit existuje v repozitári submodulu.
+  2. Uisti sa, že používaš správnu vetvu (`main` alebo `master`).
+  3. Prípadne resetni submodul:
+
+```bash
+git submodule sync
+git submodule update --init --recursive --force
+```
+
+---
+
+### 3️⃣ Lokálne zmeny v submodule
+
+* Pri práci so submodulom sa **každý submodul správa ako samostatný repozitár**.
+* Ak máš lokálne zmeny:
+
+```bash
+cd common
+git status
+git add ...
+git commit -m "Moje zmeny"
+git push
+```
+
+* Potom v hlavnom projekte commitni aktualizovaný pointer:
+
+```bash
+cd ..
+git add common
+git commit -m "Update common submodule"
+git push
+```
+
+---
+
+### 4️⃣ CI/CD tipy
+
+* Pri workflow, ktorý generuje dokumentáciu, nezabudni spustiť:
+
+```bash
+git submodule update --init --recursive
+```
+
+* Pri nasadzovaní na GitHub Pages sa odporúča **použiť cache Python závislostí**, aby sa workflow zrýchlil:
+
+```yaml
+- uses: actions/setup-python@v4
+  with:
+    python-version: '3.11'
+#    cache: 'pip'
+```
+
+---
+
+Chceš, aby som k tomuto README pridal aj **diagram workflow submodulu a generovania dokumentácie**, aby bolo vizuálne jasné, čo sa deje krok za krokom?
