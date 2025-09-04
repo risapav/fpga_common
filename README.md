@@ -61,7 +61,10 @@ Keď niekto klonuje projekt, musí spustiť:
 
 ```bash
 git clone --recurse-submodules https://github.com/risapav/fpga_ep4ce55f23
+
 # alebo po clone
+
+git submodule sync
 git submodule update --init --recursive
 ```
 
