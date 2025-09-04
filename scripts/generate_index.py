@@ -1,24 +1,45 @@
-import os
+"""
+generate_index.py
+-----------------
+Generuje index pre README.md a README.html zo súboru index.json.
+- README.md bude obsahovať odkazy na .md súbory modulov.
+- README.html bude obsahovať odkazy na .html súbory modulov.
+- Zachováva brief, zdrojový súbor a relatívnu cestu.
+- Linky sú relatívne k README a zohľadňujú adresárovú štruktúru.
+"""
+
+import json
+from pathlib import Path
 import subprocess
 
-modules_dir = 'docs_md/modules'
-index_file = 'docs_md/index.md'
-src_dir = 'src'
+# Adresáre
+modules_dir = Path("docs_md/modules")
+readme_md_file = Path("docs_md/README.md")
+readme_html_file = Path("docs_md/README.html")
+json_file = Path("docs_md/index.json")
 
 def get_git_remote_url():
+    """Získa URL GitHub repozitára"""
     try:
         url = subprocess.check_output(
-            ["git", "config", "--get", "remote.origin.url"], encoding='utf-8'
+            ["git", "config", "--get", "remote.origin.url"],
+            encoding="utf-8"
         ).strip()
-        if url.startswith("git@github.com:"): url = url.replace("git@github.com:", "https://github.com/")
-        if url.endswith(".git"): url = url[:-4]
+        if url.startswith("git@github.com:"):
+            url = url.replace("git@github.com:", "https://github.com/")
+        if url.endswith(".git"):
+            url = url[:-4]
         return url
     except subprocess.CalledProcessError:
         return None
 
 def get_git_branch():
+    """Získa aktuálnu vetvu repozitára"""
     try:
-        branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], encoding='utf-8').strip()
+        branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            encoding="utf-8"
+        ).strip()
         return branch
     except subprocess.CalledProcessError:
         return "main"
@@ -26,49 +47,42 @@ def get_git_branch():
 GITHUB_REPO_URL = get_git_remote_url() or "https://github.com/unknown/repo"
 BRANCH = get_git_branch() or "main"
 
-# Získanie všetkých markdown súborov vrátane podadresárov
-md_files = []
-for root, _, files in os.walk(modules_dir):
-    for f in files:
-        if f.endswith('.md'):
-            md_files.append(os.path.join(root, f))
-md_files.sort()
+# Načítanie index.json
+with open(json_file, encoding="utf-8") as f:
+    modules = json.load(f)
 
-def extract_description(md_path):
-    with open(md_path, encoding='utf-8') as f:
-        content = f.read()
-    import re
-    m = re.search(r"## Popis\s*(.*?)\n\s*\n", content, re.DOTALL)
-    if m:
-        desc = m.group(1).strip().replace('\n', ' ')
-        return desc[:117] + "..." if len(desc) > 120 else desc
-    return "-"
+# Zoradenie podľa mena modulu
+modules.sort(key=lambda m: m["module"].lower())
 
-def find_source_file(module_md_path):
-    # Odhad cesty k .sv súboru podľa názvu modulu
-    module_name = os.path.splitext(os.path.basename(module_md_path))[0]
-    for root, _, files in os.walk(src_dir):
-        for file in files:
-            if file == module_name + '.sv':
-                return os.path.relpath(os.path.join(root, file))
-    return None
+def write_readme(file_path: Path, use_html_links: bool):
+    """
+    Zapíše index do README.md alebo README.html.
+    :param file_path: Path súboru
+    :param use_html_links: True -> odkazy na .html, False -> odkazy na .md
+    """
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("# Dokumentácia modulov\n\n## 🔧 Zoznam\n\n")
+        f.write("| Názov modulu | Popis | Zdrojový súbor |\n")
+        f.write("|--------------|--------|----------------|\n")
 
-def generate_source_url(src_file):
-    if not src_file: return "-"
-    return f"{GITHUB_REPO_URL}/blob/{BRANCH}/{src_file.replace(os.sep, '/')}"
+        for m in modules:
+            module_name = m["module"]
+            brief = m["brief"] or "-"
+            # Odkazy buď na .md alebo .html súbory
+            doc_file = m["doc"]
+            if use_html_links:
+                doc_file = doc_file.replace(".md", ".html")
+            doc_link = f"[{module_name}](modules/{doc_file})"
 
-with open(index_file, 'w', encoding='utf-8') as f:
-    f.write("# Dokumentácia modulov\n\n## 🔧 Zoznam\n\n")
-    f.write("| Názov modulu | Popis | Zdrojový súbor |\n")
-    f.write("|--------------|--------|----------------|\n")
+            src_file = m["source"]
+            src_link = f"[{src_file}]({GITHUB_REPO_URL}/blob/{BRANCH}/src/{src_file})"
 
-    for md in md_files:
-        module_name = os.path.splitext(os.path.basename(md))[0]
-        desc = extract_description(md)
-        src_file = find_source_file(md)
-        md_link = f"[{module_name}]({os.path.relpath(md, modules_dir).replace(os.sep, '/')})"
-        src_link = generate_source_url(src_file)
-        src_link_md = f"[{os.path.basename(src_file)}]({src_link})" if src_file else "-"
-        f.write(f"| {md_link} | {desc} | {src_link_md} |\n")
+            f.write(f"| {doc_link} | {brief} | {src_link} |\n")
 
-print(f"📄 Aktualizovaný index: {index_file}")
+# Generovanie README.md (linky na .md)
+write_readme(readme_md_file, use_html_links=False)
+
+# Generovanie README.html (linky na .html)
+write_readme(readme_html_file, use_html_links=True)
+
+print(f"📄 Vygenerovaný README.md a README.html index")
