@@ -86,6 +86,10 @@ git clone --recurse-submodules https://github.com/risapav/fpga_ep4ce55f23
 # alebo po klasickom clone:
 git submodule sync
 git submodule update --init --recursive
+# potom pri chybe
+cd common
+git checkout main      # alebo commit, ktorý existuje
+git pull origin main
 ```
 
 #### Aktualizácia submodulu:
