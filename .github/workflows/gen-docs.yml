@@ -1,12 +1,11 @@
-name: Generuj a publikuj dokumentáciu
+name: Generuj dokumentáciu
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 on:
   push:
+    branches: [main]
     paths:
       - "src/**/*.sv"
       - ".github/workflows/gen-docs.yml"
@@ -17,29 +16,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛎️ Checkout kódu
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 🐍 Nastav Python
+      - name: Nastav Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-#          cache: 'pip' # Pridaný riadok na zrýchlenie
+          python-version: "3.11"
 
-      - name: 📦 Inštaluj závislosti a spusti generátor
+      - name: Inštaluj závislosti
         run: |
           pip install --upgrade pip
+          pip install markdown
+
+      - name: Generuj Markdown dokumentáciu
+        run: |
           python scripts/extract_sv_docs.py
           python scripts/generate_index.py
 
-      - name: 🔍 Over obsah vygenerovanej dokumentácie (voliteľné)
-        run: ls -lh docs_md
+      - name: Konvertuj Markdown -> HTML
+        run: python scripts/md_to_html.py
 
-      - name: 🚀 Publikuj do gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs_md   # Priečinok, ktorý sa má publikovať
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: '📝 Aktualizovaná dokumentácia'
+      - name: Deploy do gh-pages
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+      
+          git checkout --orphan gh-pages
+          git rm -rf .
+      
+          # zachovaj adresárovú štruktúru modules/ + README.html
+          #cp -r docs_md/* .
+          mv docs_md/* .
+      
+          # zabráni spracovaniu Jekyll
+          touch .nojekyll
+      
+          git add .
+          git commit -m "📝 Auto-generovaná dokumentácia a HTML"
+          git push --force origin gh-pages
