@@ -53,12 +53,10 @@
  *   );
  */
 
-
-
-`ifndef ASYNCFIFO
-`define ASYNCFIFO
-
 `default_nettype none
+
+`ifndef CDC_ASYNC_FIFO_SV
+`define CDC_ASYNC_FIFO_SV
 
 module cdc_async_fifo #(
   parameter int unsigned DATA_WIDTH = 16,
@@ -66,7 +64,7 @@ module cdc_async_fifo #(
   parameter int unsigned ALMOST_FULL_THRESHOLD  = 16,
   parameter int unsigned ALMOST_EMPTY_THRESHOLD = 16,
   // Počet bitov potrebných pre adresovanie hĺbky FIFO
-  parameter int unsigned ADDR_WIDTH = $clog2(DEPTH);
+  parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)
 )(
   // Zápisová doména (write clock domain)
   input  logic               wr_clk_i,
@@ -90,7 +88,7 @@ module cdc_async_fifo #(
   // Pamäť FIFO - pole s veľkosťou DEPTH a šírkou DATA_WIDTH
   // Atribút `ramstyle` môže pomôcť syntetizátoru vybrať správny typ pamäte
   (* ramstyle = "no_rw_check" *)
-  logic [DATA_WIDTH-1:0] mem [DEPTH];
+  logic [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
   // --- Pointery a synchronizované signály ---
   logic [ADDR_WIDTH:0] wr_ptr_bin, rd_ptr_bin;
@@ -151,7 +149,7 @@ module cdc_async_fifo #(
 
   // Synchronizácia čítacieho pointera do zápisovej domény
   cdc_two_flop_synchronizer #(.WIDTH(ADDR_WIDTH + 1)) rd_ptr_sync_inst (
-    .clk_i(wr_clk_i), .rst_ni(wr_rstn_sync), .d(rd_ptr_gray), .q(rd_ptr_gray_wrclk_sync)
+    .clk_i(wr_clk_i), .rst_ni(wr_rstn_sync), .d_i(rd_ptr_gray), .q_o(rd_ptr_gray_wrclk_sync)
   );
 
   // Prevod synchronizovaného gray pointera na binárny pre výpočty
@@ -161,10 +159,13 @@ module cdc_async_fifo #(
   wire [ADDR_WIDTH:0] wr_fill_count = wr_ptr_bin - rd_ptr_sync_wr_bin;
 
   // Logika pre stavy: plné, takmer plné, pretečenie
+  localparam int MSB = ADDR_WIDTH;
+
   assign full_o = (wr_ptr_gray == {
-    ~rd_ptr_gray_wrclk_sync[ADDR_WIDTH:ADDR_WIDTH-1],
-    rd_ptr_gray_wrclk_sync[ADDR_WIDTH-2:0]
-    });
+    ~rd_ptr_gray_wrclk_sync[MSB:MSB-1],
+    rd_ptr_gray_wrclk_sync[MSB-2:0]
+  });
+  
   assign almost_full_o = (wr_fill_count >= (DEPTH - ALMOST_FULL_THRESHOLD));
   assign overflow_o = wr_en_i && full_o;
 
@@ -189,7 +190,7 @@ module cdc_async_fifo #(
 
   // Synchronizácia zápisového pointera do čítacej domény
   cdc_two_flop_synchronizer #(.WIDTH(ADDR_WIDTH + 1)) wr_ptr_sync_inst (
-    .clk_i(rd_clk_i), .rst_ni(rd_rstn_sync), .d(wr_ptr_gray), .q(wr_ptr_gray_rdclk_sync)
+    .clk_i(rd_clk_i), .rst_ni(rd_rstn_sync), .d_i(wr_ptr_gray), .q_o(wr_ptr_gray_rdclk_sync)
   );
 
   // Prevod synchronizovaného gray pointera na binárny pre výpočty
@@ -205,4 +206,6 @@ module cdc_async_fifo #(
 
 endmodule
 
-`endif // ASYNCFIFO
+`endif // CDC_ASYNC_FIFO_SV
+
+`default_nettype wire

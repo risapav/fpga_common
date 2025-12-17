@@ -1,62 +1,60 @@
 /**
- * @brief       Dvojstupňový synchronizátor signálu pre CDC (Clock Domain Crossing).
- * @details     Modul slúži na bezpečné prenesenie asynchrónneho signálu do cieľovej hodinovej domény
- *              pomocou dvoch postupných registrov (flip-flopov). Tým sa minimalizuje riziko metastability.
- *              Šírka synchronizovaného signálu je parametrická (`WIDTH`).
+ * @file cdc_two_flop_synchronizer.sv
+ * @brief Dvojstupňový synchronizátor signálu pre CDC (Clock Domain Crossing).
+ * @details Parametrický WIDTH, reset aktívny LOW (negedge). Výstup q_o je
+ *          výsledkom po dvoch registroch (2-FF synchronizácia).
  *
- * @param[in]   WIDTH       Počet bitov vstupného a výstupného signálu (predvolené 1).
- * @input       clk_i       Hodinový signál cieľovej domény.
- * @input       rst_ni      Asynchrónny reset, aktívny nízky (negatívna logika).
- * @input       d_i         Asynchrónny vstupný signál (z inej hodinovej domény).
- * @output      q_o         Synchronizovaný výstupný signál, bezpečne prenesený do cieľovej domény.
+ *          Modul je označený atribútmi pre Intel/Quartus aj Xilinx nástroje:
+ *          - altera_attribute (Quartus)
+ *          - ASYNC_REG attribute (Xilinx)
  *
- * @example
- * cdc_two_flop_synchronizer #(
- *   .WIDTH(8)
- * ) u_sync (
- *   .clk_i(clk_target),
- *   .rst_ni(rst_n),
- *   .d_i(async_signal),
- *   .q_o(sync_signal)
- * );
+ * @param WIDTH Počet bitov signálu (predvolené 1).
+ *
+ * @input clk_i Hodinový signál cieľovej domény.
+ * @input rst_ni Asynchrónny reset (aktívny LOW).
+ * @input d_i Vstupný asynchrónny signál (WIDTH bitov).
+ * @output q_o Synchronizovaný výstup (WIDTH bitov).
  */
 
+`default_nettype none 
 
-`ifndef TWO_FLOP_SYNCHRONIZER_SV
-`define TWO_FLOP_SYNCHRONIZER_SV
-
-`default_nettype none  // Zakazuje implicitné deklarácie - zvyšuje robustnosť
+`ifndef CDC_TWO_FLOP_SYNCHRONIZER_SV
+`define CDC_TWO_FLOP_SYNCHRONIZER_SV
 
 module cdc_two_flop_synchronizer #(
-    parameter int WIDTH = 1 // Počet bitov synchronizovaného signálu
-)(
-  input  logic             clk_i,     // Hodinový signál cieľovej domény
-  input  logic             rst_ni,    // Asynchrónny reset aktívny v L (negatívna logika)
-  input  logic [WIDTH-1:0] d_i,       // Vstupný signál z inej (asynchrónnej) domény
-  output logic [WIDTH-1:0] q_o        // Výstupný, synchronizovaný signál
+    parameter int WIDTH = 1
+) (
+    input  logic [WIDTH-1:0] d_i,
+    input  logic             clk_i,
+    input  logic             rst_ni,
+    output logic [WIDTH-1:0] q_o
 );
 
-  // === Prvý stupeň synchronizácie ===
-  // Tento FF zachytáva asynchrónny vstup. Označený pre Quartus ako CDC synchronizátor.
-  // Atribút `SYNCHRONIZER_IDENTIFICATION` zabezpečí automatické rozpoznanie nástrojom.
-  (* altera_attribute = "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS" *)
-  logic [WIDTH-1:0] sync1_reg;
+    // prvý a druhý stupeň synchronizácie
+    // pridávame atribúty pre nástroje (Xilinx/Intel)
+    (* ASYNC_REG = "TRUE" *)
+    logic [WIDTH-1:0] sync_ff1;
 
-  // === Sekvenčná logika ===
-  // Vykonáva dvojstupňovú synchronizáciu v cieľovej hodinovej doméne.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      // Inicializácia počas resetu - zabraňuje neznámym stavom
-      sync1_reg <= 'd0;
-      q_o       <= 'd0;
-    end else begin
-      // Prvý FF zachytí asynchrónny signál
-      sync1_reg <= d_i;
-      // Druhý FF produkuje synchronizovaný výstup
-      q_o       <= sync1_reg;
+    // Quartus atribút pre rozpoznanie synchronizátora (voliteľné, ale užitočné)
+    (* altera_attribute = "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS" *)
+    logic [WIDTH-1:0] sync_ff2;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+            sync_ff1 <= '0;
+            sync_ff2 <= '0;
+            q_o      <= '0;
+        end else begin
+            // prvý FF zachytí asynchrónny vstup
+            sync_ff1 <= d_i;
+            // druhý FF a výstup
+            sync_ff2 <= sync_ff1;
+            q_o      <= sync_ff2;
+        end
     end
-  end
 
 endmodule
 
-`endif // TWO_FLOP_SYNCHRONIZER_SV
+`endif // CDC_TWO_FLOP_SYNCHRONIZER_SV
+
+`default_nettype wire
