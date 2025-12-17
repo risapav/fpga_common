@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>generic_serializer</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-generic_serializer">Modul <code>generic_serializer</code></h1>
+<h2 id="popis">Popis</h2>
+<p>Generický, parametrizovateľný N-kanálový serializátor so synchronizovaným CDC a voliteľným DDR/SDR režimom.</p>
+<p>Tento modul prevádza N paralelných slov pevnej šírky na N sériových výstupov.
+Implementuje dvojstupňový CDC mechanizmus (<code>shadow_reg</code> + <code>load_toggle</code>) pre robustný prenos dát
+z pomalej hodinovej domény (clk_i) do rýchlej domény (clk_x_i).</p>
+<p>Podporuje:
+- DDR režim (2 bity za cyklus, vyžaduje 5× clk_i).
+- SDR režim (1 bit za cyklus, vyžaduje 10× clk_i).
+- Obojstrannú serializáciu (LSB-first / MSB-first).
+- Držanie posledného stavu pri <code>enable_i=0</code>.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: DDRIO Prepínač režimu. 1 = DDR (2 bity/clk_x_i), 0 = SDR (1 bit/clk_x_i).</li>
+<li><code>[in]</code>: NUM_PHY_CHANNELS Počet fyzických kanálov na serializáciu (napr. 4 pre HDMI).</li>
+<li><code>[in]</code>: WORD_WIDTH Šírka serializovaného slova (napr. 10 pre TMDS).</li>
+<li><code>[in]</code>: LSB_FIRST Poradie serializácie. 1 = LSB prvý, 0 = MSB prvý.</li>
+<li><code>[in]</code>: IDLE_WORD Vzor, ktorý sa uloží po resete a drží sa pri neaktívnom <code>enable_i</code>.</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rst_ni</code></td>
+<td>Asynchrónny, aktívne nízky reset.</td>
+</tr>
+<tr>
+<td><code>enable_i</code></td>
+<td>Povolenie činnosti. Pri 0 sa posúvanie zastaví a výstupy držia poslednú hodnotu.</td>
+</tr>
+<tr>
+<td><code>clk_i</code></td>
+<td>Pomalý takt (paralelná doména, napr. pixel clock).</td>
+</tr>
+<tr>
+<td><code>clk_x_i</code></td>
+<td>Rýchly takt (serializačná doména, 5× alebo 10× clk_i).</td>
+</tr>
+<tr>
+<td><code>word_i</code></td>
+<td>Pole paralelných vstupných slov (šírky WORD_WIDTH).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data_request_o</code></td>
+<td>Impulz v clk_i doméne, keď modul očakáva nové dáta.</td>
+</tr>
+<tr>
+<td><code>phys_o</code></td>
+<td>Pole sériových výstupov (mapovaných na fyzické piny).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">// Ukážka použitia v HDMI vysielači
+generic_serializer #(
+.DDRIO(1),
+.NUM_PHY_CHANNELS(4),
+.WORD_WIDTH(10),
+.LSB_FIRST(1),
+.IDLE_WORD('0)
+) u_tmds_serializer (
+.rst_ni(rst_n),
+.enable_i(hdmi_enable),
+.clk_i(pixel_clk),
+.clk_x_i(pixel_clk_5x),
+.word_i(serializer_words),
+.data_request_o(serializer_data_request),
+.phys_o(hdmi_tmds_p)
+);
+</code></pre>
+</body>
+</html>

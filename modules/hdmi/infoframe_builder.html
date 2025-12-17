@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>infoframe_builder</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-infoframe_builder">Modul <code>infoframe_builder</code></h1>
+<h2 id="popis">Popis</h2>
+<p>Kombinačný modul na stavbu štruktúry HDMI InfoFrame paketov.</p>
+<p>Tento modul generuje kompletnú štruktúru InfoFrame paketu (hlavičku a telo)
+na základe parametra IF_TYPE a príslušných vstupov. Podporuje typy
+AVI, SPD a Audio. Výstupom sú polia bajtov pre hlavičku a telo,
+dĺžka tela a vypočítaný kontrolný súčet (checksum) na pozícii payload_o[0].
+Modul je čisto kombinačný a pripravený na pripojenie k serializačnej jednotke.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: IF_TYPE         Typ InfoFrame-u na vygenerovanie (z hdmi_pkg::infoframe_type_e).</li>
+<li><code>[in]</code>: HEADER_MAX      Veľkosť poľa pre hlavičku (štandardne 3).</li>
+<li><code>[in]</code>: PAYLOAD_MAX     Maximálna veľkosť poľa pre telo paketu (štandardne 32).</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>color_format_i</code></td>
+<td>Farebný formát pre AVI (RGB/YUV).</td>
+</tr>
+<tr>
+<td><code>aspect_ratio_i</code></td>
+<td>Pomer strán pre AVI (4:3 / 16:9).</td>
+</tr>
+<tr>
+<td><code>quant_range_i</code></td>
+<td>Dynamický rozsah pre AVI (Full/Limited).</td>
+</tr>
+<tr>
+<td><code>vic_code_i</code></td>
+<td>Video Identification Code pre AVI.</td>
+</tr>
+<tr>
+<td><code>vendor_name_i</code></td>
+<td>Meno výrobcu pre SPD (8 znakov ASCII).</td>
+</tr>
+<tr>
+<td><code>product_desc_i</code></td>
+<td>Popis produktu pre SPD (16 znakov ASCII).</td>
+</tr>
+<tr>
+<td><code>source_device_i</code></td>
+<td>Typ zdrojového zariadenia pre SPD.</td>
+</tr>
+<tr>
+<td><code>audio_channels_i</code></td>
+<td>Počet audio kanálov - 1 (napr. 1 pre 2 kanály).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header_o</code></td>
+<td>Pole 3 bajtov hlavičky (Typ, Verzia, Dĺžka).</td>
+</tr>
+<tr>
+<td><code>payload_o</code></td>
+<td>Pole bajtov tela paketu (payload_o[0] je checksum).</td>
+</tr>
+<tr>
+<td><code>payload_len_o</code></td>
+<td>Skutočná dĺžka tela paketu v bajtoch.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">// Inštancia pre generovanie AVI InfoFrame pre 800x600@60Hz, 4:3, RGB Full Range
+infoframe_builder #(
+.IF_TYPE(hdmi_pkg::INFO_AVI)
+) avi_builder_inst (
+.color_format_i(hdmi_pkg::COLOR_FORMAT_RGB),
+.aspect_ratio_i(hdmi_pkg::ASPECT_RATIO_4_3),
+.quant_range_i(hdmi_pkg::QUANT_RANGE_FULL),
+.vic_code_i(8'd25),
+// Ostatné vstupy môžu byť nepripojené (pre syntézu sa optimalizujú preč)
+.header_o(avi_header),
+.payload_o(avi_payload),
+.payload_len_o(avi_payload_len)
+);
+</code></pre>
+</body>
+</html>

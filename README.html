@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>README</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="dokumentacia-modulov">Dokumentácia modulov</h1>
+<h2 id="zoznam">🔧 Zoznam</h2>
+<table>
+<thead>
+<tr>
+<th>Názov modulu</th>
+<th>Popis</th>
+<th>Zdrojový súbor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="modules/axis/axis_checker_generator.md">axis_checker_generator</a></td>
+<td>-</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_checker_generator.sv">axis/axis_checker_generator.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axis/axis_frame_streamer.md">axis_frame_streamer</a></td>
+<td>AXI4-Stream Frame Streamer generujúci súradnice pixelov.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_frame_streamer.sv">axis/axis_frame_streamer.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axis/axis_gradient_generator.md">axis_gradient_generator</a></td>
+<td>-</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_gradient_generator.sv">axis/axis_gradient_generator.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axis/axis_to_vga.md">axis_to_vga</a></td>
+<td>Premosťuje AXI4-Stream dáta na paralelný VGA výstup.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_to_vga.sv">axis/axis_to_vga.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/utils/blink_led.md">blink_led</a></td>
+<td>Jednoduchý modul na blikanie LED s nastaviteľnou frekvenciou.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/utils/blink_led.sv">utils/blink_led.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/cdc/cdc_async_fifo.md">cdc_async_fifo</a></td>
+<td>Asynchrónny FIFO buffer s oddelenými hodinovými doménami pre zápis a čítanie.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/cdc/cdc_async_fifo.sv">cdc/cdc_async_fifo.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/cdc/cdc_reset_synchronizer.md">cdc_reset_synchronizer</a></td>
+<td>Synchronizátor asynchrónneho resetu pre cieľovú hodinovú doménu.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/cdc/cdc_reset_synchronizer.sv">cdc/cdc_reset_synchronizer.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/cdc/cdc_two_flop_synchronizer.md">cdc_two_flop_synchronizer</a></td>
+<td>Dvojstupňový synchronizátor signálu pre CDC (Clock Domain Crossing).</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/cdc/cdc_two_flop_synchronizer.sv">cdc/cdc_two_flop_synchronizer.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axis/CheckerPattern.md">CheckerPattern</a></td>
+<td>AXI4-Stream generátor šachovnicového vzoru (checkerboard pattern)</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_checker_generator.sv">axis/axis_checker_generator.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/hdmi/generic_serializer.md">generic_serializer</a></td>
+<td>Generický, parametrizovateľný N-kanálový serializátor so synchronizovaným CDC a voliteľným DDR/SDR režimom.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/hdmi/generic_serializer.sv">hdmi/generic_serializer.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axis/GradientPattern.md">GradientPattern</a></td>
+<td>Generuje AXI4-Stream výstup s farebným gradientom.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axis/axis_gradient_generator.sv">axis/axis_gradient_generator.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/hdmi/hdmi_tx_top.md">hdmi_tx_top</a></td>
+<td>Hlavný modul digitálneho HDMI vysielača.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/hdmi/hdmi_tx_top.sv">hdmi/hdmi_tx_top.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/hdmi/infoframe_builder.md">infoframe_builder</a></td>
+<td>Kombinačný modul na stavbu štruktúry HDMI InfoFrame paketov.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/hdmi/infoframe_builder.sv">hdmi/infoframe_builder.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/axi/my_axi_peripheral.md">my_axi_peripheral</a></td>
+<td>Definície AXI rozhraní (AXI4, AXI4-Lite, AXI4-Stream) pre použitie v SoC dizajne.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/axi/axi_interfaces.sv">axi/axi_interfaces.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/hdmi/packet_streamer.md">packet_streamer</a></td>
+<td>Sekvenčný modul (FSM) pre serializáciu a multiplexovanie viacerých HDMI paketov.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/hdmi/packet_streamer.sv">hdmi/packet_streamer.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/picture/picture_gen.md">picture_gen</a></td>
+<td>Generátor testovacích obrazcov pre VGA výstup.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/picture/picture_gen.sv">picture/picture_gen.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/vga/rgb565_to_rgb888.md">rgb565_to_rgb888</a></td>
+<td>Kombinačný modul, ktorý konvertuje 16-bitovú farbu vo formáte RGB565 na 24-bitovú farbu vo formáte RGB888.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/vga/rgb565_to_rgb888.sv">vga/rgb565_to_rgb888.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/utils/seven_seg_mux.md">seven_seg_mux</a></td>
+<td>Modul pre multiplexovanie 7-segmentového displeja.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/utils/seven_seg_mux.sv">utils/seven_seg_mux.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/hdmi/tmds_encoder_pipelined.md">tmds_encoder_pipelined</a></td>
+<td>TMDS enkodér pre HDMI s 3-stupňovou pipeline a DC-balancom.</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/hdmi/tmds_encoder_pipelined.sv">hdmi/tmds_encoder_pipelined.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/vga/vga_ctrl.md">vga_ctrl</a></td>
+<td>VGA kontrolér pre výstup RGB signálu a synchronizačných impulzov</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/vga/vga_ctrl.sv">vga/vga_ctrl.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/vga/vga_line.md">vga_line</a></td>
+<td>Generátor jednej časovej periódy VGA signálu</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/vga/vga_line.sv">vga/vga_line.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/vga/vga_pixel_xy.md">vga_pixel_xy</a></td>
+<td>Generátor VGA súradníc pixelov (X, Y)</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/vga/vga_pixel_xy.sv">vga/vga_pixel_xy.sv</a></td>
+</tr>
+<tr>
+<td><a href="modules/vga/vga_timing.md">vga_timing</a></td>
+<td>VGA generátor časovania</td>
+<td><a href="https://github.com/risapav/fpga_common/blob/main/src/vga/vga_timing.sv">vga/vga_timing.sv</a></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

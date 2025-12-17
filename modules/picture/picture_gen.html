@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>picture_gen</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-picture_gen">Modul <code>picture_gen</code></h1>
+<h2 id="popis">Popis</h2>
+<p>Generátor testovacích obrazcov pre VGA výstup.</p>
+<p>Modul generuje rôzne testovacie obrazce (šachovnice, prechody, farebné pruhy, pohyblivé prvky)
+automaticky prispôsobené rozlíšeniu definovanému parametrom a riadené režimom <code>mode_i</code>.
+Vstupy sú súradnice pixelov, signály časovania a povolenie činnosti modulu.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: MaxModes     Počet dostupných režimov generovania obrazcov.</li>
+<li><code>[in]</code>: MAX_COUNTER_H   Najvyššia hodnota, ktorú dosiahne čítač počítajúci pozíciu v H smere</li>
+<li><code>[in]</code>: MAX_COUNTER_V   Najvyššia hodnota, ktorú dosiahne čítač počítajúci pozíciu v V smere</li>
+<li><code>[in]</code>: ModeWidth    Šírka bitov pre výber režimu (voľba obrazca).</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>clk_i</code></td>
+<td>Hodinový signál (pixel clock).</td>
+</tr>
+<tr>
+<td><code>rst_ni</code></td>
+<td>Synchrónny reset, aktívny v L.</td>
+</tr>
+<tr>
+<td><code>enable_i</code></td>
+<td>Povolenie generovania obrazcov.</td>
+</tr>
+<tr>
+<td><code>h_line_i</code></td>
+<td>Informácie o horizontálnom časovaní (line_t typ).</td>
+</tr>
+<tr>
+<td><code>v_line_i</code></td>
+<td>Informácie o vertikálnom časovaní (line_t typ).</td>
+</tr>
+<tr>
+<td><code>x_i</code></td>
+<td>Aktuálna X súradnica pixelu.</td>
+</tr>
+<tr>
+<td><code>y_i</code></td>
+<td>Aktuálna Y súradnica pixelu.</td>
+</tr>
+<tr>
+<td><code>de_i</code></td>
+<td>Data Enable – indikuje viditeľnú oblasť pixelov.</td>
+</tr>
+<tr>
+<td><code>mode_i</code></td>
+<td>Výber režimu generátora obrazcov.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data_o</code></td>
+<td>Výstupný RGB565 dátový signál pre aktuálny pixel.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">import vga_pkg::*;
+
+picture_gen #(
+.MaxModes(8),
+.MAX_COUNTER_H(MaxPosCounterX),
+.MAX_COUNTER_V(MaxPosCounterY)
+) u_picture_gen (
+.clk_i(clk),
+.rst_ni(rst_n),
+.enable_i(1'b1),
+.h_line_i(h_line),
+.v_line_i(v_line),
+.x_i(pixel_x),
+.y_i(pixel_y),
+.de_i(data_enable),
+.mode_i(3'd2),
+.data_o(rgb_data)
+);
+</code></pre>
+</body>
+</html>

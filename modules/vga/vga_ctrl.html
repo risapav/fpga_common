@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>vga_ctrl</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-vga_ctrl">Modul <code>vga_ctrl</code></h1>
+<h2 id="popis">Popis</h2>
+<p>VGA kontrolér pre výstup RGB signálu a synchronizačných impulzov</p>
+<p>Modul <code>vga_ctrl</code> je vrcholový riadiaci modul pre VGA výstup. Integruje generátor časovania (<code>vga_timing</code>)
+a výstupnú logiku, ktorá riadi synchronizačné impulzy, data enable signály a farebný výstup.
+Z FIFO zásobníka načítava RGB dáta v režime "aktívne zobrazovanie" (hde &amp; vde). Ak FIFO neobsahuje dáta
+počas požiadavky, výstupne sa generuje diagnostická farba <code>UNDERRUN_COLOR</code>.
+Počas blankingu sa výstupne generuje <code>BLANKING_COLOR</code>.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: BLANKING_COLOR     Farba (RGB565), ktorá sa zobrazuje počas "blanking" intervalov.</li>
+<li><code>[in]</code>: UNDERRUN_COLOR     Diagnostická farba zobrazovaná pri podtečení FIFO.</li>
+<li><code>[in]</code>: MAX_COUNTER_H   Najvyššia hodnota, ktorú dosiahne čítač počítajúci pozíciu v H smere</li>
+<li><code>[in]</code>: MAX_COUNTER_V   Najvyššia hodnota, ktorú dosiahne čítač počítajúci pozíciu v V smere</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>clk_i</code></td>
+<td>Hlavný hodinový signál (pixel clock).</td>
+</tr>
+<tr>
+<td><code>rst_ni</code></td>
+<td>Asynchrónny reset, aktívny v L.</td>
+</tr>
+<tr>
+<td><code>enable_i</code></td>
+<td>Povolenie činnosti (aktivuje generovanie signálov).</td>
+</tr>
+<tr>
+<td><code>h_line_i</code></td>
+<td>Časové parametre pre horizontálnu synchronizáciu (štruktúra typu <code>line_t</code>).</td>
+</tr>
+<tr>
+<td><code>v_line_i</code></td>
+<td>Časové parametre pre vertikálnu synchronizáciu (štruktúra typu <code>line_t</code>).</td>
+</tr>
+<tr>
+<td><code>fifo_data_i</code></td>
+<td>RGB565 farebné dáta pre aktuálny pixel z FIFO zásobníka.</td>
+</tr>
+<tr>
+<td><code>fifo_empty_i</code></td>
+<td>Signál indikujúci prázdny FIFO (podtečenie).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hde_o</code></td>
+<td>Aktivita horizontálnej oblasti (1 počas ACT fázy).</td>
+</tr>
+<tr>
+<td><code>vde_o</code></td>
+<td>Aktivita vertikálnej oblasti (1 počas ACT fázy).</td>
+</tr>
+<tr>
+<td><code>dat_o</code></td>
+<td>Výstupné RGB dáta (typ <code>vga_data_t</code>) pre DAC.</td>
+</tr>
+<tr>
+<td><code>syn_o</code></td>
+<td>Výstupný signál typu <code>vga_sync_t</code> (obsahuje h_sync a v_sync).</td>
+</tr>
+<tr>
+<td><code>eol_o</code></td>
+<td>Pulz na konci riadku (End Of Line).</td>
+</tr>
+<tr>
+<td><code>eof_o</code></td>
+<td>Pulz na konci celej snímky (End Of Frame).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">Názorný príklad použitia:
+
+import vga_pkg::*;
+
+localparam VgaMode = VGA_640x480_60;
+localparam int PixelClockHz = get_pixel_clock(VgaMode);
+
+// --- Signály pre prepojenie modulov ---
+rgb565_t picture_data;     // Dáta z generátora obrazu
+rgb565_t   data_out;       // Finálne dáta z VGA radiča
+vga_sync_t sync_out;       // Finálne sync signály z VGA radiča
+wire       hde, vde;       // Data Enable signály
+wire       eol, eof;       // Pulzy konca riadku/snímky
+
+line_t      h_line;
+line_t      v_line;
+
+`ifdef __ICARUS__
+// Pre simuláciu (Icarus) zadáme parametre manuálne
+h_line = '{640, 16, 96, 48, PulseActiveLow};
+v_line = '{480, 10, 2, 33, PulseActiveLow};
+`else
+// Pre syntézu (Quartus) použijeme funkciu z balíčka vga_pkg
+            vga_params_t vga_params = get_vga_params(VgaMode);
+assign h_line = vga_params.h_line;
+assign v_line = vga_params.v_line;
+`endif
+
+// --- Inštancia VGA radiča (časovanie + dátová cesta) ---
+vga_ctrl #(
+.BLANKING_COLOR(16'h0000),
+.UNDERRUN_COLOR(16'hF81F)
+) u_ctrl (
+.clk_i        (pixel_clk),
+.rst_ni       (rst_n),
+.enable_i     (1'b1), // Radič beží neustále
+.h_line_i     (h_line),
+.v_line_i     (v_line),
+.fifo_data_i  (picture_data),
+.fifo_empty_i (1'b0), // Zdroj dát (generátor) nie je nikdy prázdny
+.hde_o        (hde),
+.vde_o        (vde),
+.dat_o        (data_out),
+.syn_o        (sync_out),
+.eol_o        (eol),
+.eof_o        (eof)
+);
+</code></pre>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>tmds_encoder_pipelined</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-tmds_encoder_pipelined">Modul <code>tmds_encoder_pipelined</code></h1>
+<h2 id="popis">Popis</h2>
+<p>TMDS enkodér pre HDMI s 3-stupňovou pipeline a DC-balancom.</p>
+<p>Tento modul implementuje enkódovanie TMDS podľa špecifikácie DVI/HDMI.
+Vstupom je 8-bitový pixelový dátový kanál a riadiace bity (HSYNC, VSYNC),
+výstupom je 10-bitové TMDS kódové slovo. Modul udržuje bežiacu disparitu
+(running disparity) pre zabezpečenie DC-balansu. Je rozdelený do troch
+pipeline stupňov:
+- <strong>S1</strong>: Minimalizácia prechodov (8b -&gt; 9b) + predvýpočet počtu jednotiek
+- <strong>S2</strong>: Registrovanie medzivýsledkov (ones_in_qm8 sa prenáša pipelineom)
+- <strong>S3</strong>: DC-balanovanie a výber výsledného 10b kódu</p>
+<p>Modul podporuje režimy:
+- VIDEO_PERIOD (štandardné TMDS enkódovanie pixelov)
+- CONTROL_PERIOD (špeciálne riadiace symboly C0, C1)
+- AUDIO_PERIOD a DATA_PERIOD (guard bands podľa HDMI špecifikácie)</p>
+<p>Latencia modulu je fixne 3 taktovacie cykly.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: clk_i        Taktovací signál (pixel clock)</li>
+<li><code>[in]</code>: rst_ni       Synchrónny reset, aktívny v nízkej úrovni</li>
+<li><code>[in]</code>: data_i       8-bitové video dáta (tmds_data_t)</li>
+<li><code>[in]</code>: data_type_i  Typ periódy (VIDEO, CONTROL, AUDIO, DATA)</li>
+<li><code>[in]</code>: c0_i         Control bit 0 (napr. HSYNC)</li>
+<li><code>[in]</code>: c1_i         Control bit 1 (napr. VSYNC)</li>
+<li><code>[out]</code>: tmds_o       Výsledné 10-bitové TMDS kódové slovo</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>clk_i</code></td>
+<td>Hlavný hodinový signál</td>
+</tr>
+<tr>
+<td><code>rst_ni</code></td>
+<td>Reset vstup (aktívny v 0)</td>
+</tr>
+<tr>
+<td><code>data_i</code></td>
+<td>Video dáta (RGB kanál)</td>
+</tr>
+<tr>
+<td><code>data_type_i</code></td>
+<td>Určuje režim enkódovania</td>
+</tr>
+<tr>
+<td><code>c0_i,</code></td>
+<td>c1_i   HDMI control signály</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tmds_o</code></td>
+<td>Enkódovaný TMDS výstup</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">// Príklad inštancie enkodéra pre jeden TMDS kanál
+tmds_encoder_pipelined encoder_inst (
+.clk_i       (clk_pixel),
+.rst_ni      (rst_n),
+.data_i      (pixel_r),
+.data_type_i (VIDEO_PERIOD),
+.c0_i        (hsync),
+.c1_i        (vsync),
+.tmds_o      (tmds_red)
+);
+</code></pre>
+</body>
+</html>

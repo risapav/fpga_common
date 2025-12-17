@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>seven_seg_mux</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 0.5rem; }
+th { background: #f0f0f0; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+pre { background-color: #f5f5f5; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1 id="modul-seven_seg_mux">Modul <code>seven_seg_mux</code></h1>
+<h2 id="popis">Popis</h2>
+<p>Modul pre multiplexovanie 7-segmentového displeja.</p>
+<p>Tento modul umožňuje zobrazovanie viacerých číslic na jednom 7-segmentovom displeji pomocou multiplexovania.
+Vstupné číslice a bodky sú postupne zobrazované v pravidelnom časovom intervale s frekvenciou <code>DIGIT_REFRESH_HZ</code>.
+Modul obsahuje interný segmentový dekóder a podporuje displeje so spoločnou anódou alebo katódou.</p>
+<h2 id="parametre">Parametre</h2>
+<ul>
+<li><code>[in]</code>: CLOCK_FREQ_HZ      Frekvencia hodinového signálu (Hz). Predvolené: 50_000_000.</li>
+<li><code>[in]</code>: NUM_DIGITS         Počet číslic na displeji. Predvolené: 3.</li>
+<li><code>[in]</code>: DIGIT_REFRESH_HZ   Frekvencia prepínania medzi číslicami (Hz). Predvolené: 250.</li>
+<li><code>[in]</code>: COMMON_ANODE       Typ displeja: 1 = spoločná anóda (CA), 0 = spoločná katóda (CK).</li>
+</ul>
+<h2 id="vstupy-input">Vstupy (input)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>clk_i</code></td>
+<td>Vstupný hodinový signál.</td>
+</tr>
+<tr>
+<td><code>rst_ni</code></td>
+<td>Synchronný reset, aktívny v L.</td>
+</tr>
+<tr>
+<td><code>digits_i</code></td>
+<td>Pole číslic (0–F) pre každý digit.</td>
+</tr>
+<tr>
+<td><code>dots_i</code></td>
+<td>Pole logických hodnôt pre desatinné bodky.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vystupy-output">Výstupy (output)</h2>
+<table>
+<thead>
+<tr>
+<th>Názov</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>digit_sel_o</code></td>
+<td>Výber aktuálne zobrazovanej číslice (one-hot).</td>
+</tr>
+<tr>
+<td><code>segment_sel_o</code></td>
+<td>Výstupné segmenty: DP,G,F,E,D,C,B,A.</td>
+</tr>
+<tr>
+<td><code>current_digit_o</code></td>
+<td>Index práve zobrazovanej číslice.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priklady-pouzitia">Príklady použitia</h2>
+<pre class="codehilite"><code class="language-systemverilog">seven_seg_mux #(
+.CLOCK_FREQ_HZ(50_000_000),
+.NUM_DIGITS(4),
+.DIGIT_REFRESH_HZ(500),
+.COMMON_ANODE(1)
+) u_display (
+.clk_i(clk),
+.rst_ni(rst_n),
+.digits_i({digit3, digit2, digit1, digit0}),
+.dots_i({dot3, dot2, dot1, dot0}),
+.digit_sel_o(digit_sel),
+.segment_sel_o(segment_sel),
+.current_digit_o(active_digit)
+);
+</code></pre>
+</body>
+</html>
